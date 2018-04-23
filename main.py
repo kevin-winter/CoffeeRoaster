@@ -6,9 +6,11 @@ from dash.dependencies import Input, Output, State
 from plotly.graph_objs import *
 
 import defaults
+from defaults import min_roasttemp, max_roasttemp, min_roasttime, max_roasttime, HEATING, FAN, BEAN_ENTRANCE, BEAN_EXIT, TESTLED
 import layout
 import sensordata
 
+test = 0
 starttime = 0
 
 app = dash.Dash(__name__)
@@ -66,19 +68,21 @@ def on_click(n, time, temp):
     if not n:
         return ""
 
+    trigger_test_led()
     if is_roasting():
         return stop_roast()
     else:
         return start_roast(time, temp)
 
 def start_roast(duration, temp):
-    if not defaults.min_roasttime <= duration <= defaults.max_roasttime:
-        return "Roast time must be between {} and {} seconds".format(defaults.min_roasttime, defaults.max_roasttime)
+    if not min_roasttime <= duration <= max_roasttime:
+        return "Roast time must be between {} and {} seconds".format(min_roasttime, max_roasttime)
 
-    if not defaults.min_roasttemp <= temp <= defaults.max_roasttemp:
-        return "Roast temperature must be between {} and {} degrees C".format(defaults.min_roasttemp, defaults.max_roasttemp)
+    if not min_roasttemp <= temp <= max_roasttemp:
+        return "Roast temperature must be between {} and {} degrees C".format(min_roasttemp, max_roasttemp)
 
-    turn_on_heating(temp)
+    set_heating(temp)
+    set_fanspeed(100)
 
     sensordata.data.clear()
 
@@ -88,13 +92,25 @@ def start_roast(duration, temp):
     return "Roasting for {} seconds".format(duration)
 
 def stop_roast():
-    #get_data().clear()
-    #starttime = time()+roasttime+1
     defaults.roasttime = time() - starttime
     return "Roasting cancelled"
 
-def turn_on_heating(temp):
-    return
+def set_heating(temp):
+    sensordata.tasks.put((HEATING, temp))
+
+def set_fanspeed(speed):
+    sensordata.tasks.put((FAN, speed))
+
+def trigger_bean_entrance():
+    sensordata.tasks.put((BEAN_ENTRANCE,))
+
+def trigger_bean_exit():
+    sensordata.tasks.put((BEAN_EXIT,))
+
+def trigger_test_led():
+    global test
+    test ^= 1
+    sensordata.tasks.put((TESTLED, test))
 
 
 def is_roasting():

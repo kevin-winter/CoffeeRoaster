@@ -13,3 +13,10 @@ max_roasttime = 30*60
 roasttemp = 230
 min_roasttemp = 180
 max_roasttemp = 300
+
+HEATING = 0
+FAN = 1
+BEAN_ENTRANCE = 2
+BEAN_EXIT = 3
+
+TESTLED = 100
