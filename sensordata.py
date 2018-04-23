@@ -30,8 +30,8 @@ def get_measurements():
     while True:
         with datalock:
             data['t'].append(np.round(time(), 1))
-            data['temp'].append(int(serial_read()))
-            data['beantemp'].append(int(serial_read()-100))
+            data['temp'].append(int(serial_read())%300)
+            data['beantemp'].append((int(serial_read())-100)%300)
         sleep(1.0/samplefreq)
 
 
