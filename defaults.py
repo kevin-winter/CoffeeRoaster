@@ -1,5 +1,5 @@
 # Sensor Data
-samplefreq = 2 #Hz
+samplefreq = 4 #Hz
 max_recorded = int(10*60*samplefreq)
 
 # Main Page

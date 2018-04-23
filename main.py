@@ -26,13 +26,13 @@ app.layout = layout.mainpage
 def graphdata():
     t, temp, beantemp = sessiondata()
     return [{'x': t, 'y': temp,
-             'name': 'Temp',
-             'mode': 'lines+markers',
+             'name': 'Air Temperature',
+             'mode': 'lines',#+markers',
              'type': 'scatter'},
 
             {'x': t, 'y': beantemp,
-             'name': 'Beantemp',
-             'mode': 'lines+markers',
+             'name': 'Bean Temperature',
+             'mode': 'lines',#+markers',
              'type': 'scatter'}]
 
 def sessiondata():
@@ -57,7 +57,8 @@ def update_graph_live(n):
     fig['layout'] = {
         'title': 'Temperatures',
         "xaxis": {'range': [0, defaults.roasttime]},
-        "yaxis": {'range': [0, 700]}
+        "yaxis": {'range': [0, 300]},
+        "legend" : {"orientation": "h", "x": 0.5, "y": "-0.05", "xanchor": "center", "yanchor": "top"}
     }
     return fig
 

@@ -12,7 +12,7 @@ void setup() {
 void loop() {
   write();
   read();
-  delay(1000);
+  delay(100);
 }
 
 void write(){
