@@ -6,16 +6,18 @@ from dash.dependencies import Input, Output, State
 from plotly.graph_objs import *
 
 import defaults
-from defaults import min_roasttemp, max_roasttemp, min_roasttime, max_roasttime, HEATING, FAN, BEAN_ENTRANCE, BEAN_EXIT, TESTLED
+from defaults import min_roasttemp, max_roasttemp, min_roasttime, max_roasttime, HEATING, FAN, BEAN_ENTRANCE, BEAN_EXIT, TESTLED, profiles
 import layout
 import sensordata
 
 test = 0
 starttime = 0
 
-app = dash.Dash(__name__)
-#app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+app = dash.Dash()
+app.title = "Coffee Roaster"
+
 app.css.append_css({"external_url": "https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"})
+
 app.scripts.append_script({"external_url": "https://code.jquery.com/jquery-3.3.1.slim.min.js"})
 app.scripts.append_script({"external_url": "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"})
 app.scripts.append_script({"external_url": "https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"})
@@ -43,12 +45,20 @@ def sessiondata():
         t = t[t <= defaults.roasttime]
     return t, temp, beantemp
 
+
+@app.callback(Output('in-roasttemp', 'value'), [Input('sl-profile', 'value')])
+def update_profile_temp(t):
+    return profiles[t][1]
+
+
 @app.callback(Output('btn-start', 'children'), [Input('interval1', 'n_intervals')])
 def update_button(n):
+    print(defaults.refresh_rate)
     if is_roasting():
         return "Cancel Roast"
     else:
         return "Start Roast"
+
 
 @app.callback(Output('graph1', 'figure'), [Input('interval1', 'n_intervals')])
 def update_graph_live(n):
@@ -57,15 +67,15 @@ def update_graph_live(n):
     fig['layout'] = {
         'title': 'Temperatures',
         "xaxis": {'range': [0, defaults.roasttime]},
-        "yaxis": {'range': [0, 300]},
-        "legend" : {"orientation": "h", "x": 0.5, "y": "-0.05", "xanchor": "center", "yanchor": "top"}
+        "yaxis": {'range': [0, 250]},
+        "legend": {"orientation": "h", "x": 0.5, "y": "-0.05", "xanchor": "center", "yanchor": "top"}
     }
     return fig
 
 
 @app.callback(Output('lbl-roast', 'children'), [Input('btn-start', 'n_clicks')],
-              [State('in-roasttime', 'value'), State('in-roasttemp', 'value')])
-def on_click(n, time, temp):
+              [State('in-roasttime', 'value'), State('in-roasttemp', 'value'), State("cb-preheat", "values")])
+def on_click(n, time, temp, preheat):
     if not n:
         return ""
 
@@ -73,9 +83,11 @@ def on_click(n, time, temp):
     if is_roasting():
         return stop_roast()
     else:
-        return start_roast(time, temp)
+        return start_roast(time, temp, preheat)
 
-def start_roast(duration, temp):
+
+
+def start_roast(duration, temp, preheat):
     if not min_roasttime <= duration <= max_roasttime:
         return "Roast time must be between {} and {} seconds".format(min_roasttime, max_roasttime)
 

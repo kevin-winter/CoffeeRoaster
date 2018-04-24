@@ -29,9 +29,11 @@ def serial_init():
 def get_measurements():
     while True:
         with datalock:
+            v = float(serial_read())
+            print(v)
             data['t'].append(np.round(time(), 1))
-            data['temp'].append(int(serial_read())%300)
-            data['beantemp'].append((int(serial_read())-100)%300)
+            data['temp'].append(v)
+            data['beantemp'].append((v+1024))
         sleep(1.0/samplefreq)
 
 
